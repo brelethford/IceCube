@@ -1,0 +1,9 @@
+Remember to use the following for plots that haven't been cleared by IceCube yet.
+
+def ic_prelim(fig, x = 0.75, y = 0.8, **kw):
+    """Marks maps and plots as preliminary"""
+    if 'color' not in kw:
+        kw['color'] = 'red'
+    if 'weight' not in kw:
+        kw['weight'] = 'bold'
+    fig.text(x, y, "IceCube Preliminary", **kw)

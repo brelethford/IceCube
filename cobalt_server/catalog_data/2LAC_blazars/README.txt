@@ -1,0 +1,1 @@
+This folder is meant to recreate the sensitivities of 2 years of data for Thorstens All Blazar 2LAC analysis. First I need to extract the src locations, then match them to a catalog with gamma ray fluxes.

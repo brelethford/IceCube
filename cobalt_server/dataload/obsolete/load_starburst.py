@@ -1,0 +1,355 @@
+# -*-coding:utf8-*-
+from __future__ import print_function
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+import scipy as sp
+import tables
+import os
+from icecube.umdtools import cache,misc
+from icecube import icetray, dataclasses, histlite, astro, neutrinoflux, NewNuFlux
+r"""Load different years of data in and load it correctly to the LLH classes."""
+
+####NOTE - this script is to load data corresponding to starburst data that was used by Tessa for the 3yr calculations - no pull correction of 1.1774, sirin's IC79 instead of kai. Not sure yet what data was used for Tessa's 7yr starburst check.
+
+
+#Livetimes (in days)
+livetime_IC86I = 332.61
+livetime_IC79  = 315.506
+livetime_IC59  = 348.138
+livetime_IC40  = 375.539
+
+#Loading Zone#
+projfolder='/home/brelethford/Documents/IceCube_Research/'
+datafolder='/data/user/brelethford/Data/AGN_Core_Sample/'
+filename_pickle = datafolder+'pickle/'
+
+ra86I_sim, sindec86I_sim , ra86I_data, sindec86I_data, ra86I_true, sindec86I_true, energy86I_true, muex86I_sim, muex86I_data, sigma86I_sim, sigma86I_data, OneWeight_IC86I, dpsi_IC86I = cache.load (filename_pickle+"sirin_IC86I/coords.pickle")
+
+ra79_sim, sindec79_sim , ra79_data, sindec79_data, ra79_true, sindec79_true, energy79_true, muex79_sim, muex79_data, sigma79_sim, sigma79_data, OneWeight_IC79, dpsi_IC79 = cache.load (filename_pickle+"sirin_IC79/coords.pickle")
+
+nch79_sim, nch79_data = cache.load (filename_pickle+"sirin_IC79/NCh.pickle")
+
+ra59_sim, sindec59_sim , ra59_data, sindec59_data, ra59_true, sindec59_true, energy59_true, mue59_sim, mue59_data, sigma59_sim, sigma59_data, OneWeight_IC59, dpsi_IC59 = cache.load (filename_pickle+"sirin_IC59/coords.pickle")
+
+#nch59_sim, nch59_data = cache.load (filename_pickle+"IC59/NCh.pickle")
+
+ra40_sim, sindec40_sim , ra40_data, sindec40_data, ra40_true, sindec40_true, energy40_true, mue40_sim, mue40_data, sigma40_sim, sigma40_data, OneWeight_IC40, dpsi_IC40 = cache.load (filename_pickle+"sirin_IC40/coords.pickle")
+
+#nch40_sim, nch40_data = cache.load (filename_pickle+"IC40/NCh.pickle")
+#End Loading Zone.#
+
+
+#Weighting
+honda = NewNuFlux.makeFlux('honda2006')
+honda.knee_reweighting_model = 'gaisserH3a_elbert' 
+flux = honda.getFlux
+
+#For Skylab I only need OneWeight (I think?) I'll keep the function for posterity, but let's just keep oneweight:
+
+    ### Pull Correction ###
+#A polynomial exists to make sure dpsi and sigma have the same median. This is different for each year.
+#The polynomial was done with incorrect assumptions from IC40 - IC86I- to fix this, we multiply by the following factor:
+
+#Now these are all handled courtesy of their respective prepdata folder
+#pullCorrect = 1./1.1774
+#
+### for IC40:
+##https://wiki.icecube.wisc.edu/index.php/IC-40_PS_Cut_Variables
+#def RescaledSigma_IC40_SplineMPE( Sigma, Energy):
+#  x = np.log10(Energy);
+#  return Sigma  * pullCorrect * (1.189207*(4.974823 -1.967809*x +0.2706778*pow(x,2.)))
+#  
+### for IC59:
+##https://wiki.icecube.wisc.edu/index.php/IC59_PS_Cut_Variables#Paraboloid_Sigma_.28corrected.29
+#def RescaledSigma_IC59_SplineMPE( Sigma, Energy):
+# x = np.log10(Energy);
+# return Sigma * pullCorrect * (31.9051 - 24.5591*pow(x,1.)+7.19661*pow(x,2.)-0.908188*pow(x,3.)+0.043108*pow(x,4.))
+#
+##for IC79:
+##https://wiki.icecube.wisc.edu/index.php/IC79_Point_Source_Analysis/Reconstruction
+#
+#def RescaledSigma_IC79_SplineMPE(Sigma, nch):
+#    x = np.log10(nch)
+#    return Sigma * pullCorrect * (5.620-7.448*x+3.519*pow(x, 2.0)+0.252*pow(x, 3.0) -0.509*pow(x, 4.0)+0.095*pow(x, 5.0))
+#
+#    #Currently, the plan is to use a dpsi/sigma of 1, because the function which causes a median of 1 is already found. But, we may need to change this later. The function comes from , and is: https://wiki.icecube.wisc.edu/index.php/IC86_I_Point_Source_Analysis/Analysis_Variables#Paraboloid_Pull_Tests_and_Performance
+#    #I'll keep this part separate from loading in data, because it's computationally inexpensive and might need to change.
+#
+#def RescaledSigma_IC86_SplineMPE( Sigma, Energy):
+# x = np.log10(Energy);
+# return Sigma * pullCorrect * (79.0 - 86.7 * pow(x,1.) + 38.45 * pow(x,2.) - 8.673 * pow(x,3.) + 1.056 * pow(x,4.) - 0.0658 * pow(x,5.) + 0.00165 * pow(x,6.))
+
+# skylab (not importing right now)
+from mstacking.psLLH import PointSourceLLH, MultiPointSourceLLH, StackingPointSourceLLH, StackingMultiPointSourceLLH
+from mstacking.ps_model import  ClassicLLH, EnergyLLH, PowerLawLLH
+
+#Here, let's reinstitute the randomness, so that I can redo it in specific things.
+#np.random.seed(1)
+
+Nexp40=len(ra40_data)
+Nmc40=len(ra40_sim)
+
+Nexp59=len(ra59_data)
+Nmc59=len(ra59_sim)
+
+Nexp79=len(ra79_data)
+Nmc79=len(ra79_sim)
+
+Nexp86I=len(ra86I_data)
+Nmc86I=len(ra86I_sim)
+
+#The following exp and mc events have been split into dictionaries in accordance with their respective  prepdata folder
+
+##### IC86I ########
+
+##### IC79 #######
+
+
+##### IC59 #######
+
+##### IC40 #######
+
+
+def init86I(energy=False,  mode='all', **kwargs):
+    arr_exp = cache.load(filename_pickle+"sirin_IC86I/exp.pickle")
+    arr_mc = cache.load(filename_pickle+"sirin_IC86I/mc.pickle")
+    #This hem... not sure about what it means, but stefan uses it in load.py.
+    #Obviously it's for the hemisphere line - but why doesn't he use it for every year?
+    hem = np.sin(np.radians(-5.))
+    dec_bins = np.unique(np.concatenate([
+                         np.linspace(-1., -0.2, 10 + 1),
+                         np.linspace(-0.2, hem, 4 + 1),
+                         np.linspace(hem, 0.2, 5 + 1),
+                         np.linspace(0.2, 1., 10),
+                         ]))
+    #check this later, BEN!
+    energy_bins = [np.linspace(1., 10., 67 + 1), dec_bins]
+
+    if energy:
+
+        llh_model = EnergyLLH(energy_bins,
+                          sinDec_bins=dec_bins)
+        
+        #llh_model = EnergyLLH(sinDec_bins=dec_bins(50),#min(50, Nexp // 50),
+        #                      sinDec_range=[-1., 1.],
+        #                      logE_bins=min(50, Nexp // 50), #energybins(50)
+        #                      logE_range=[[0.9 * min(arr_exp["logE"].min(),
+        #                                               arr_mc["logE"].min()),
+        #                                     1.1 * max(arr_exp["logE"].max(),
+        #                                               arr_mc["logE"].max())],
+        #                                     [-1., 1.]]) 
+    else:
+
+        llh_model = ClassicLLH(#["logE"], min(50, Nexp // 50),
+                                #twodim_range=[0.9 * arr_mc["logE"].min(),
+                                 #             1.1 * arr_mc["logE"].max()],
+                                sinDec_bins=dec_bins,
+                                sinDec_range=[-1., 1.])
+
+    #Why a different sindec binning? Curious...
+    llh = StackingPointSourceLLH(arr_exp, arr_mc, livetime=livetime_IC86I, llh_model=llh_model,
+                         mode=mode, #hemisphere=dict(Full=[-np.inf, np.inf]),
+                         #nsource=Nexp / 100.,
+                         #nsource_bounds=(-Nexp / 2., Nexp / 2.)
+                         #               if not energy else (0., Nexp / 2.),
+                         seed=np.random.randint(2**32),
+                         **kwargs)
+
+    return llh
+
+
+def init79(energy=False,  mode='all', **kwargs):
+    arr_exp = cache.load(filename_pickle+"sirin_IC79/exp.pickle")
+    arr_mc = cache.load(filename_pickle+"sirin_IC79/mc.pickle")
+
+    dec_bins = np.unique(np.concatenate([
+                           np.linspace(-1., -0.75, 10 + 1),
+                           np.linspace(-0.75, 0.0, 15 + 1),
+                           np.linspace(0.0, 1., 20 + 1),
+                           ]))    
+
+    energy_bins = [np.linspace(2., 9., 67 + 1), dec_bins]
+
+    if energy:
+
+        llh_model = EnergyLLH(energy_bins,
+                          sinDec_bins=dec_bins)
+        
+        #llh_model = EnergyLLH(sinDec_bins=dec_bins(50),#min(50, Nexp // 50),
+        #                      sinDec_range=[-1., 1.],
+        #                      logE_bins=min(50, Nexp // 50), #energybins(50)
+        #                      logE_range=[[0.9 * min(arr_exp["logE"].min(),
+        #                                               arr_mc["logE"].min()),
+        #                                     1.1 * max(arr_exp["logE"].max(),
+        #                                               arr_mc["logE"].max())],
+        #                                     [-1., 1.]]) 
+    else:
+
+        llh_model = ClassicLLH(#["logE"], min(50, Nexp // 50),
+                                #twodim_range=[0.9 * arr_mc["logE"].min(),
+                                 #             1.1 * arr_mc["logE"].max()],
+                                sinDec_bins=dec_bins,
+                                sinDec_range=[-1., 1.])
+
+    #Why a different sindec binning? Curious...
+    llh = StackingPointSourceLLH(arr_exp, arr_mc, livetime=livetime_IC79, llh_model=llh_model,
+                         mode=mode, #hemispheres=dict(Full=[-np.inf, np.inf]),
+                         #nsource=Nexp / 100.,
+                         #nsource_bounds=(-Nexp / 2., Nexp / 2.)
+                         #               if not energy else (0., Nexp / 2.),
+                         seed=np.random.randint(2**32),
+                         **kwargs)
+
+    return llh
+
+def init59(energy=False, mode='all', **kwargs):
+    arr_exp = cache.load(filename_pickle+"sirin_IC59/exp.pickle")
+    arr_mc = cache.load(filename_pickle+"sirin_IC59/mc.pickle")
+
+    dec_bins = np.unique(np.concatenate([
+                           np.linspace(-1., -0.95, 2 + 1),
+                           np.linspace(-0.95, -0.25, 25 + 1),
+                           np.linspace(-0.25, 0.05, 15 + 1),
+                           np.linspace(0.05, 1., 10 + 1),
+                           ]))    
+
+    dec_bins_logE = np.unique(np.concatenate([
+                           np.linspace(-1., -0.05, 20 + 1),
+                           np.linspace(0.05, 1., 10 + 1),
+                           ]))     
+
+    energy_bins = [np.linspace(2., 9.5, 67 + 1), dec_bins_logE]
+
+    if energy:
+
+        llh_model = EnergyLLH(energy_bins,
+                          sinDec_bins=dec_bins)
+        
+        #llh_model = EnergyLLH(sinDec_bins=dec_bins(50),#min(50, Nexp // 50),
+        #                      sinDec_range=[-1., 1.],
+        #                      logE_bins=min(50, Nexp // 50), #energybins(50)
+        #                      logE_range=[[0.9 * min(arr_exp["logE"].min(),
+        #                                               arr_mc["logE"].min()),
+        #                                     1.1 * max(arr_exp["logE"].max(),
+        #                                               arr_mc["logE"].max())],
+        #                                     [-1., 1.]]) 
+    else:
+
+        llh_model = ClassicLLH(#["logE"], min(50, Nexp // 50),
+                                #twodim_range=[0.9 * arr_mc["logE"].min(),
+                                 #             1.1 * arr_mc["logE"].max()],
+                                sinDec_bins=dec_bins,
+                                sinDec_range=[-1., 1.])
+
+    #Why a different sindec binning? Curious...
+    llh = StackingPointSourceLLH(arr_exp, arr_mc, livetime=livetime_IC59, llh_model=llh_model,
+                         mode=mode, #hemispheres=dict(Full=[-np.inf, np.inf]),
+                         #nsource=Nexp / 100.,
+                         #nsource_bounds=(-Nexp / 2., Nexp / 2.)
+                         #               if not energy else (0., Nexp / 2.),
+                         seed=np.random.randint(2**32),
+                         **kwargs)
+
+    return llh
+
+def init40(energy=False, mode='all', **kwargs):
+    arr_exp = cache.load(filename_pickle+"sirin_IC40/exp.pickle")
+    arr_mc = cache.load(filename_pickle+"sirin_IC40/mc.pickle")
+
+    dec_bins = np.unique(np.concatenate([
+                           np.linspace(-1., -0.25, 10 + 1),
+                           np.linspace(-0.25, 0.0, 5 + 1),
+                           np.linspace(0.0, 1., 10 + 1),
+                           ]))    
+
+    dec_bins_logE = np.unique(np.concatenate([
+                           np.linspace(-1., -0.25, 10 + 1),
+                           np.linspace(-0.25, 0.0, 10 + 1),
+                           np.linspace(0.0, 1., 10 + 1),
+                           ]))     
+    #These binnings are done, year specifically, in load.py from stefan.
+    energy_bins = [np.linspace(2., 9., 75 + 1), dec_bins_logE]
+
+    if energy:
+
+        llh_model = EnergyLLH(energy_bins,
+                          sinDec_bins=dec_bins)
+        
+    else:
+
+        llh_model = ClassicLLH(#["logE"], min(50, Nexp // 50),
+                                #twodim_range=[0.9 * arr_mc["logE"].min(),
+                                 #             1.1 * arr_mc["logE"].max()],
+                                sinDec_bins=dec_bins,
+                                sinDec_range=[-1., 1.])
+
+    #Why a different sindec binning? Curious...
+    llh = StackingPointSourceLLH(arr_exp, arr_mc, livetime=livetime_IC40, llh_model=llh_model,
+                         mode=mode, #hemispheres=dict(Full=[-np.inf, np.inf]),
+                         #nsource=Nexp / 100.,
+                         #nsource_bounds=(-Nexp / 2., Nexp / 2.)
+                         #               if not energy else (0., Nexp / 2.),
+                         seed=np.random.randint(2**32),
+                         **kwargs)
+
+    return llh
+##Okay, so now let's figure out how to use... this.
+##It looks like it makes an LLH without using weighting or stipulating an event sample... how? is it related to what n is?
+##What is 'n'? Looks like it gets used in llh.add_sample as a string object - is this how the llh is found? they add samples separately after defining the llh object first?
+
+def multi_init(n, energy=False, **kwargs):
+    #energy = kwargs.pop("energy", False)
+
+    #Now it looks like we don't need llhmodel ahead of time? Maybe because we can use init to get it from each sample...
+
+    llh = StackingMultiPointSourceLLH(#hemispheres=dict(Full=[-np.inf, np.inf]),
+                              #nsource=Nexp / 100.,
+                              #nsource_bounds=(-Nexp / 2., Nexp / 2.)
+                              #               if not energy else (0., Nexp / 2.),
+                              seed=np.random.randint(2**32),
+                              **kwargs)
+    #Not sure why it's written this way... I'll try to make it work to preserve as much functionality that I don't understand as possible.
+    #for i in xrange(n):
+    #    llh.add_sample(str(i), init(energy=energy))
+    #On second thought I'll make n a list of the samples I want to put in.
+
+    for i in xrange(len(n)):
+        llh.add_sample(str(i), n[i])
+
+    return llh
+
+def initMC_40():
+  mc = cache.load(filename_pickle+"sirin_IC40/mc.pickle")
+  return mc
+
+def initMC_59():
+  mc = cache.load(filename_pickle+"sirin_IC59/mc.pickle")
+  return mc
+
+def initMC_79():
+  mc = cache.load(filename_pickle+"sirin_IC79/mc.pickle")
+  return mc
+
+def initMC_86I():
+  mc = cache.load(filename_pickle+"sirin_IC86I/mc.pickle")
+
+  return mc
+
+def initMC_3yr():
+  mc40 = cache.load(filename_pickle+"sirin_IC40/mc.pickle")
+  mc59 = cache.load(filename_pickle+"sirin_IC59/mc.pickle")
+  mc79 = cache.load(filename_pickle+"sirin_IC79/mc.pickle")
+
+  MC = {0:mc40, 1:mc59, 2:mc79}
+  return MC
+
+def initMC_4yr():
+  mc40 = cache.load(filename_pickle+"sirin_IC40/mc.pickle")
+  mc59 = cache.load(filename_pickle+"sirin_IC59/mc.pickle")
+  mc79 = cache.load(filename_pickle+"sirin_IC79/mc.pickle")
+  mc86I = cache.load(filename_pickle+"sirin_IC86I/mc.pickle")
+
+  MC = {0:mc40, 1:mc59, 2:mc79, 3: mc86I}
+  return MC
+

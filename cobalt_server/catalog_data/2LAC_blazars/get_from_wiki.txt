@@ -1,0 +1,27 @@
+from icecube.umdtools import misc, cache
+
+filename = open('/home/brelethford/Documents/IceCube_Research/Scripts/AGN_Core/2LAC_blazars/rawsource.txt','r')
+
+rawdata = filename.read()
+filename.close()
+table = [map(str, row.split('||')) for row in rawdata.strip().split("\n")][::2]
+#Now we've got a table with the 862 blazars used in thorsten's analysis. Let's make a dictionary so we can match this list up with another list of all the 2LAC blazars and get the gamma information.
+
+number,AGNname,Ferminame,ra,dec,optical,SEDclass=[],[],[],[],[],[],[]
+
+for i in table:
+  number.append(int(i[0]))
+  AGNname.append(i[1])
+  Ferminame.append(i[2])
+  ra.append(float(i[3]))
+  dec.append(float(i[4]))
+  optical.append(i[5])
+  SEDclass.append(i[6])
+
+params = {'number':number,'AGNname':AGNname,'Ferminame':Ferminame,'ra':ra,'dec':dec,'opticalclass':optical,'SEDclass':SEDclass}
+
+cache.save(params, '/data/user/brelethford/Data/2LAC/pickle/params.pickle')
+
+
+
+

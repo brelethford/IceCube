@@ -1,0 +1,2 @@
+Remember - The scripts here are generalized to produce sensitivities for a range of gamma hypotheses. The background trials currently do not depend on this (need to investigate further on this point)
+However, I've kept the working versions of these scripts in the subfolder, so I can redo them later if necessary.

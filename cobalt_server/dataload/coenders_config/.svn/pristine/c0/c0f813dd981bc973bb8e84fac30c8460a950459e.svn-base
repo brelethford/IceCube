@@ -1,0 +1,45 @@
+/home/jwood/public_html/joint-icecube-hawc/skylab/skylab/llh_models.py:792: UserWarning: Energy bins empty. Empty bins: [ 2.0625  2.1875  2.3125  2.4375  8.5625  8.6875  8.8125  8.9375]
+  if self._allow_empty: warnings.warn(estr)
+/home/jwood/public_html/joint-icecube-hawc/skylab/skylab/llh_models.py:792: UserWarning: Energy bins empty. Empty bins: [ 2.1875  8.8125  8.9375  9.0625  9.1875  9.3125  9.4375]
+  if self._allow_empty: warnings.warn(estr)
+/home/jwood/public_html/joint-icecube-hawc/skylab/skylab/llh_models.py:792: UserWarning: Energy bins empty. Empty bins: [ 2.0625  2.1875  2.3125  2.4375  8.8125  8.9375]
+  if self._allow_empty: warnings.warn(estr)
+/home/jwood/public_html/joint-icecube-hawc/skylab/skylab/llh_models.py:792: UserWarning: Energy bins empty. Empty bins: [ 1.0625  1.1875  1.4375  9.8125  9.9375]
+  if self._allow_empty: warnings.warn(estr)
+/home/jwood/public_html/joint-icecube-hawc/skylab/skylab/llh_models.py:792: UserWarning: Energy bins empty. Empty bins: [ 9.3125  9.4375]
+  if self._allow_empty: warnings.warn(estr)
+
+ seasons:
+   - IC40            (livetime  375.54 days,  36900 events)
+   - IC59            (livetime  348.14 days, 107011 events)
+   - IC79b           (livetime  315.51 days,  93133 events)
+   - IC86, 2011      (livetime  332.61 days, 136244 events)
+   - IC86, 2012-2014 (livetime 1057.54 days, 338590 events)
+
+ results:
+   - Northern Hotspot ra  32.20 dec  62.10 ns 32.6 gamma 2.8 (7yr paper) | ns 36.2 gamma 2.9 (this code)
+   - Southern Hotspot ra 174.60 dec -39.30 ns 15.4 gamma 2.9 (7yr paper) | ns 16.4 gamma 3.0 (this code)
+   -         J1908+06 ra 286.98 dec   6.27 ns  4.5 gamma 2.0 (7yr paper) | ns  4.4 gamma 2.1 (this code)
+   -            Cyg A ra 299.87 dec  40.73 ns  2.1 gamma 1.4 (7yr paper) | ns  2.1 gamma 1.4 (this code)
+   -          Cyg X-3 ra 308.11 dec  40.96 ns 12.8 gamma 4.0 (7yr paper) | ns 13.3 gamma 4.0 (this code)
+   -     1ES 1959+650 ra 300.00 dec  65.15 ns 15.4 gamma 3.1 (7yr paper) | ns 17.4 gamma 3.0 (this code)
+   -     PKS 1406-076 ra 212.24 dec  -7.87 ns  7.3 gamma 2.6 (7yr paper) | ns  5.2 gamma 2.9 (this code)
+   -   HESS J1303-631 ra 195.74 dec -63.20 ns  4.5 gamma 2.3 (7yr paper) | ns  5.6 gamma 2.4 (this code)
+   -     PKS 2005-489 ra 302.37 dec -48.82 ns  0.9 gamma 1.0 (7yr paper) | ns  1.0 gamma 1.0 (this code)
+   -   HESS J1616-508 ra 243.78 dec -51.40 ns  2.4 gamma 4.0 (7yr paper) | ns  0.0 gamma 2.3 (this code)
+   -   HESS J1614-518 ra 243.58 dec -51.82 ns  2.2 gamma 4.0 (7yr paper) | ns  0.0 gamma 2.3 (this code)
+
+ p-values:
+   - Northern Hotspot ts 23.16 p < 2.0e-04 ( 43.27 sec)
+   - Southern Hotspot ts 19.47 p < 2.0e-04 ( 37.69 sec)
+   -         J1908+06 ts  4.61 p 0.023 ( 50.93 sec)
+   -            Cyg A ts  2.55 p 0.075 ( 44.73 sec)
+   -          Cyg X-3 ts  2.64 p 0.067 ( 44.66 sec)
+   -     1ES 1959+650 ts  4.95 p 0.031 ( 76.75 sec)
+   -     PKS 1406-076 ts  1.45 p 0.152 ( 43.39 sec)
+   -   HESS J1303-631 ts  3.26 p 0.048 ( 37.58 sec)
+   -     PKS 2005-489 ts  2.56 p 0.075 ( 39.52 sec)
+   -   HESS J1616-508 ts  0.00 p 1.000 ( 39.96 sec)
+   -   HESS J1614-518 ts  0.00 p 1.000 ( 38.85 sec)
+
+ Completed in 692.64 sec
