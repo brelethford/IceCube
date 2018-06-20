@@ -1,0 +1,19 @@
+This is just an ongoing reminder of the things I'm currently checking out and why.
+
+SwiftBAT sensdisc for all weights:
+  - Check if weighting is at least reasonable in comparison (dist weight best)
+
+WHSP Blazar sensdisc:
+  - If worse in same way as Starburst, it's a weight or number of sources issue.
+  - If good agreement, its a data problem (shouldn't use npz for other anlyses)
+
+Mimic coenders binning scheme:
+  - Just to see how temperamental this stuff is to the binning
+  - Try WHSP sensdisc again both wys - shows temperamental for one catalog specifically
+
+Implement my own pullcorrected data:
+  - Should do for 4yr and 1yr anyway - can compare
+  - Improve my 4yr curves?
+
+Check per source / per year weights for SNR_noPWN
+  - To confirm with Tessa

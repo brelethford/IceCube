@@ -1,0 +1,34 @@
+This catalog of sources is used to confirm basic stacking checks for any code. For this reason it is designed to be as simple as possible to begin, with additional features (weights, extensions, multiple years) as each check is completed.
+
+What you will need:
+-IC86I year of data (provided in this folder as an npy array)
+  -Note - this is coender's IC86I sample used in his 7yr PS analysis, but that doesn't mean you need to use it for your analysis - just for this test to ensure congruity.
+  -livetime for this year of data is set at 332.61 in days (we use an actual livetime to be able to have better intuition for the results)
+-Test source parameters (params.py, found in this folder, contain 10 sources)
+-Binning parameters (see below)
+
+
+
+Binning parameters:
+These parameters are chosen to be simply implemented but also to achieve a certain discrimination at the more sensitive declinations (near the horizon).
+   dec bins: 101
+   dec range: -90 - 90 
+
+   energy bins: 36
+   energy range: 10 - 10^10 (GeV)
+
+   Ex:
+            dec_kw=dict (
+                bins=101, range=(-1, 1),
+            ),
+            energy_kw=dict (
+                sindec_bins=101, logenergy_bins=36,
+                logenergy_range=(1, 10)
+            )
+
+
+Injection parameters:
+  injection bandwidth = 0.05 (in sinDec)
+  injection spectrum = 2.0
+  tolerance = 0.04
+

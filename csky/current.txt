@@ -1,0 +1,15 @@
+This is just an ongoing reminder of the things I'm currently checking out and why.
+
+catalogs:
+	-4yr starburst
+	-4yr blackhole
+	-4yr swiftbat (equal, flux, redshift)
+	-Milagro17
+
+
+Tonight:
+        -blackhole + swiftbat equal sensdisc
+        -ref these plots and values in wiki
+        -explain eff. curve in wiki, ref scripts used
+        -figure out - why allsky lower in the south for fast? Possibly disc. pot...
+

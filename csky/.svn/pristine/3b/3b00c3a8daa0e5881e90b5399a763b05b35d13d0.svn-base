@@ -1,0 +1,7 @@
+This txtfile is specifically to give dev notes for Mike when I encounter anything in csky that's vague or something I don't understand.
+
+
+trials.py:
+  
+   PSTrialRunner.[every_function] - Needs docstrings (TRUTH,logevery, etc. - can use the same stuff from later functions)
+                                  - differences between functions unclear through names, needs explicit defining (e.g. get_one_ts vs. get_one_ts_ns_gamma)
